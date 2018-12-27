@@ -13,14 +13,15 @@ db.init_app(app)
 def main():
     f = open("books.csv")
     reader = csv.reader(f, delimiter=',')
-    next(reader)                                # skips the top line with headings
+    next(reader)              # skips the top line
     for ISBN, title, author, date in reader:
-        book = Book(ISBN_num = ISBN, title = title, author = author, publication_year = int(date))
+        book = Book(isbn = ISBN, title = title, author = author, publicationyear = int(date))
         db.session.add(book)
         print(f"Added book with {ISBN}, title : {title}, author: {author}, publication year: {date}.")
     print("commiting")
     db.session.commit()
     print("committed all data")
+
 if __name__ == "__main__":
     with app.app_context():
         main()
