@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    <b>Home
+    </b>
+{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <br>
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <h1> Please Login to Continue </h1>
+        </div>
+    </div>
+
+    <form action={{ url_for( 'index') }} method="post" class="col-3">
+        <div class="form-group">
+            <label for="exampleInputEmail1">Username</label>
+            <input type="text" class="form-control" name="username" placeholder="Username">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputPassword1">Password</label>
+            <input type="password" class="form-control" name="password" placeholder="Password">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <br>
+
+    <form action= "{{ url_for('signup') }}" class="col-5">
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </form>
+</div>
+{% endblock %}
