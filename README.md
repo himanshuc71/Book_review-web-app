@@ -7,3 +7,12 @@
 
 ### API Access: 
 If users make a GET request to the website’s /api/<isbn> route, where <isbn> is an ISBN number, the website returns a JSON response containing the book’s title, author, publication date, ISBN number, review count, and average score. 
+  
+### How to run
+In the Terminal/cmd prompt,
+
+pip3 install -r requirements.txt
+
+export/set FLASK_APP=application.py
+
+flask run
