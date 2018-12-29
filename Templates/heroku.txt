@@ -1,0 +1,13 @@
+ec2-107-20-237-78.compute-1.amazonaws.com
+Database
+d3nnekv2913b3f
+User
+qdzyngedqxnukc
+Port
+5432
+Password
+884b4093dc638c2b0a6108356bbcf1d6bcfb839923e048bb7220649cbc254453
+URI
+postgres://qdzyngedqxnukc:884b4093dc638c2b0a6108356bbcf1d6bcfb839923e048bb7220649cbc254453@ec2-107-20-237-78.compute-1.amazonaws.com:5432/d3nnekv2913b3f
+Heroku CLI
+heroku pg:psql postgresql-shallow-54722 --app readforfun
