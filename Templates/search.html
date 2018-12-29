@@ -1,13 +1,14 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Book_Search
+    Search
 {% endblock %}
 
 {% block body %}
-    <form action={{ url_for('logout') }} class="col-3">
-        <button type="submit" class="btn btn-outline-danger">Logout as {{username}}</button>
-
+    <form action={{ url_for('logout') }} class="col-12">
+      <!-- <div class="float-right"> -->
+        <button type="submit" class="btn btn-outline-danger float-right">Logout as {{username}}</button>
+      <!-- </div> -->
     </form>
 
     <div class="container">
@@ -51,7 +52,7 @@
             <br>
                 <li>
                     <h5>
-                    <a href="{{ url_for('book', title=book.title, author=book.author, year=book.publication_year, isbn=book.ISBN_num) }}"> {{ book.title }} </a>
+                    <a href="{{ url_for('book', isbn = book.isbn) }}"> {{ book.title }} </a>
                     by {{ book.author }}
                     </h5>
                 </li>
