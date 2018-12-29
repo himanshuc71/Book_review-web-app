@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 #Goodreads API Key
-BOOKREAD_API_KEY = "vblp6JmsLMf9SehrZSbqQ"
+GOODREADS_API_KEY = "vblp6JmsLMf9SehrZSbqQ"
 #postgres url
 DATABASE_URL = "postgres://qdzyngedqxnukc:884b4093dc638c2b0a6108356bbcf1d6bcfb839923e048bb7220649cbc254453@ec2-107-20-237-78.compute-1.amazonaws.com:5432/d3nnekv2913b3f"
 
@@ -92,27 +92,57 @@ def search():
     if session.get("user_id") is None:
         render_template("error.html", message = "Login Required")
     if request.method == 'POST':
+        user_search = request.form.get("search")
         # user is searching by title
         if request.form.get("inlineRadioOptions") == "option1":
-            user_search = request.form.get("search")
-            book_search = db.execute("SELECT * FROM books WHERE title LIKE LOWER(:s)", { "s": '%' + user_search + '%'}).fetchall()
+            book_search = db.execute("SELECT * FROM books WHERE LOWER(title) LIKE LOWER(:s)", { "s": '%' + user_search + '%'}).fetchall()
             return render_template("search.html", username = session["user_id"], result = book_search)
         # user is searching by ISBN
         elif request.form.get("inlineRadioOptions") == "option2":
-            user_search = request.form.get("search")
             book_search = db.execute("SELECT * FROM books WHERE isbn LIKE LOWER(:s)", { "s": '%' + user_search + '%'}).fetchall()
             return render_template("search.html", username = session["user_id"], result = book_search)
         # user is searching by author name
         else:
-            user_search = request.form.get("search")
-            book_search = db.execute("SELECT * FROM books WHERE author LIKE LOWER(:s)", { "s": '%' + user_search + '%'}).fetchall()
+            book_search = db.execute("SELECT * FROM books WHERE LOWER(author) LIKE LOWER(:s)", { "s": '%' + user_search + '%'}).fetchall()
             return render_template("search.html", username = session["user_id"], result = book_search)
     return render_template("search.html", username = session["user_id"])
 
-############################################## finish this and the radio check problem
-@app.route("/book", methods=['GET','POST'])
-def book():
-    return render_template("book.html")
+#book page functionality
+@app.route("/book/<string:isbn>", methods=['GET','POST'])
+def book(isbn):
+    # is user logged in or not
+    if session.get("user_id") is None:
+        return render_template("error.html", message="Login Required")
+    # check if book is in database
+    if db.execute('SELECT * FROM books WHERE isbn = :isbn', {"isbn": isbn}).rowcount == 0:
+        return render_template("error.html", message="Error 404: Page not found")
+
+    book = db.execute('SELECT * FROM books WHERE isbn = :isbn', {"isbn": isbn}).fetchone()
+    # From Goodreads getting average rating and number of ratings
+    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": GOODREADS_API_KEY, "isbns": isbn})
+    avg_rating_Goodreads = res.json()['books'][0]['average_rating']
+    number_rating_Goodreads = res.json()['books'][0]['work_ratings_count']
+
+    if request.method == 'POST':
+        u_id = db.execute('SELECT * FROM users WHERE username = :u', {"u": session["user_id"]}).fetchone()
+        u_id = u_id.id
+        # user has already submitted a review
+        if db.execute("SELECT * FROM reviews WHERE userid = :u_id", {"u_id":u_id}).fetchone():
+            return render_template("error.html", message="Can't review the same book twice")
+        else:
+            rating = request.form.get("rating")
+            review = request.form.get("review")
+            db.execute("INSERT into reviews (userid, bookid, rating, text) VALUES (:u_id,:b_id,:rating,:review)",
+            {"u_id": u_id, "b_id": book.id,"rating": rating, "review": review})
+            db.commit()
+            reviews = db.execute('SELECT * FROM reviews WHERE bookid = :b_id', {"b_id": book.id}).fetchall()
+            text = "Review submitted"
+            return render_template("book.html", book = book, username = session["user_id"], isbn = isbn, reviews = reviews,
+            avg_rating_Goodreads = avg_rating_Goodreads,number_rating_Goodreads = number_rating_Goodreads, text = text)
+
+    reviews = db.execute('SELECT * FROM reviews WHERE bookid = :b_id', {"b_id": book.id}).fetchall()
+    return render_template("book.html", book = book, username = session["user_id"], isbn = isbn, reviews = reviews,
+    avg_rating_Goodreads = avg_rating_Goodreads,number_rating_Goodreads = number_rating_Goodreads)
 
 # api design that returns a json object
 @app.route("/api/<string:isbn>")
@@ -126,7 +156,8 @@ def api(isbn):
                 "isbn": isbn,
                 "review_count": 0,
                 "average_score": 0.0}
-    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": BOOKREAD_API_KEY, "isbns": isbn})
+    #requesting data from goodreads
+    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": GOODREADS_API_KEY, "isbns": isbn})
 
     jsonobj["average_score"] = res.json()['books'][0]['average_rating']
     jsonobj["review_count"] = res.json()['books'][0]['work_ratings_count']
