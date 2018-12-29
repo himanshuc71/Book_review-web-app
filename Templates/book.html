@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    <b>{{book.title}}</b>
+{% endblock %}
+
+{% block body %}
+    <form action={{ url_for('logout') }} class="col-12">
+        <!-- <div class="float-right"> -->
+          <button type="submit" class="btn btn-outline-danger float-right">Logout as {{username}}</button>
+        <!-- </div> -->
+    </form>
+
+    <h1> <b>Book Details</b> </h1>
+
+    <div class="card" style="width: 20rem; float:right">
+        <img src="http://covers.openlibrary.org/b/isbn/{{isbn}}-L.jpg" class="img-fluid" alt="Responsive image">
+    </div>
+
+    <h3> Title: {{book.title}} </h3>
+
+    <ul>
+      <li>Author: {{book.author}}</li>
+      <li>Publication year: {{book.publicationyear}}</li>
+      <li>ISBN : {{isbn}}</li>
+    </ul>
+
+
+    <form action="{{ url_for('book', isbn = book.isbn )}}" method="post">
+      <select name="rating" float: left>
+        <option value="1">1</option>
+		    <option value="2">2</option>
+		    <option value="3">3</option>
+		    <option value="4">4</option>
+		    <option value="5">5</option>
+	    </select>
+      <br>
+      <textarea name="review" rows="3" cols="80" maxlength="450" placeholder ="Write a review for the book here(max characters:450)"></textarea>
+      <br>
+      <button type="submit" class="btn btn-primary">Submit review</button>
+      {% if text %}
+      <div class="alert alert-success col-md-3" role="alert">
+           {{ text }}
+      </div>
+      {% endif %}
+    </form>
+    <h2>Reviews</h2>
+    <ul>
+      {% for review in reviews %}
+      <li> Rating: {{review.rating}} </li>
+      {{review.text}}
+      {% else %}
+      <li> No reviews for this book yet. </li>
+      {% endfor %}
+    </ul>
+
+    <h2>Goodreads ratings</h2>
+    <ul>
+      <li>Average rating: {{avg_rating_Goodreads}}</li>
+      <li>{{number_rating_Goodreads}} User reviews</li>
+    </ul>
+
+{% endblock %}
