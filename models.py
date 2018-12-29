@@ -35,4 +35,3 @@ class Review(db.Model):
     bookid = db.Column(db.Integer, db.ForeignKey("books.id"), nullable = False)
     text = db.Column(db.String, nullable = True)
     rating = db.Column(db.Integer, nullable = False)
-    db.CheckConstraint("rating>0 AND rating<6 ")
